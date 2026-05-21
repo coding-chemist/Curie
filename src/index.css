@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-font-smoothing: antialiased; }
+
+body {
+  background: #f5f5f7;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.3; }
+}
+
+.animate-rise-1 { animation: riseIn 0.6s ease 0.1s both; }
+.animate-rise-2 { animation: riseIn 0.7s ease 0.25s both; }
+.animate-rise-3 { animation: riseIn 0.6s ease 0.4s both; }
+.animate-rise-4 { animation: riseIn 0.6s ease 0.55s both; }
+
+.blink { animation: blink 2s ease-in-out infinite; }
