@@ -32,3 +32,28 @@ export async function lookupMolecule(query) {
 
   return res.json()
 }
+
+/**
+ * Send a natural-language chemistry question to the LangGraph agent.
+ * @param {string} question - e.g. "What is the LD50 of caffeine?"
+ * @returns {Promise<AskResponse>}
+ * @throws {Error} with a user-readable message
+ */
+export async function askQuestion(question) {
+  const res = await fetch(`${BASE_URL}/api/v1/ask`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: question.trim() }),
+  })
+
+  if (res.status === 429) {
+    throw new Error('Too many requests — please wait a moment and try again.')
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail || 'Agent temporarily unavailable. Please try again.')
+  }
+
+  return res.json()
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './index.css'
 import { useMolecule } from './hooks/useMolecule'
+import { useAsk }      from './hooks/useAsk'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,58 @@ const StarIcon = () => (
   </svg>
 )
 
+const AgentIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2" />
+    <circle cx="8" cy="8" r="2.5" fill="currentColor" opacity="0.3" />
+    <circle cx="8" cy="8" r="1" fill="currentColor" />
+    <line x1="8" y1="1.5" x2="8" y2="3.5"  stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+    <line x1="8" y1="12.5" x2="8" y2="14.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+    <line x1="1.5" y1="8" x2="3.5" y2="8"   stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+    <line x1="12.5" y1="8" x2="14.5" y2="8" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+  </svg>
+)
+
+const SparkleIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <path d="M9 1.5L10.4 6.8C10.6 7.5 11.1 8 11.8 8.2L17.1 9.6L11.8 11C11.1 11.2 10.6 11.7 10.4 12.4L9 17.7L7.6 12.4C7.4 11.7 6.9 11.2 6.2 11L0.9 9.6L6.2 8.2C6.9 8 7.4 7.5 7.6 6.8L9 1.5Z"
+      fill="url(#sparkle-grad)" />
+    <defs>
+      <linearGradient id="sparkle-grad" x1="0" y1="0" x2="18" y2="18">
+        <stop offset="0%" stopColor="#a855f7" />
+        <stop offset="100%" stopColor="#7c3aed" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
+const BoxIcon = ({ size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+    <path d="M2 5L8 2L14 5L8 8L2 5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    <path d="M2 5V11L8 14L14 11V5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    <path d="M8 8V14" stroke="currentColor" strokeWidth="1.2" />
+  </svg>
+)
+
+const BookIcon = ({ size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+    <path d="M2 3C2 2.5 2.5 2 3 2H7V13H3C2.5 13 2 12.5 2 12V3Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    <path d="M14 3C14 2.5 13.5 2 13 2H9V13H13C13.5 13 14 12.5 14 12V3Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+  </svg>
+)
+
+const CheckIcon = ({ size = 10 }) => (
+  <svg width={size} height={size} viewBox="0 0 10 10" fill="none">
+    <path d="M2 5L4 7L8 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const ArrowIcon = () => (
+  <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+    <path d="M3 2L6 5L3 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
 // ── Spinner ───────────────────────────────────────────────────────────────────
 
 const Spinner = () => (
@@ -49,16 +102,27 @@ const Spinner = () => (
   </svg>
 )
 
-// ── Suggestion pills ──────────────────────────────────────────────────────────
+// ── Suggestions ───────────────────────────────────────────────────────────────
 
-const SUGGESTIONS = [
-  'What is the LD50 of caffeine?',
-  'Show structure of aspirin',
-  'Is ethanol flammable?',
-  'CAS number of ibuprofen',
+const LOOKUP_SUGGESTIONS = ['caffeine', 'aspirin', 'ibuprofen', 'ethanol', 'vanillin']
+
+const ASK_SUGGESTIONS = [
+  'What is caffeine used for?',
+  'Is aspirin available in stock?',
+  'What are the properties of ibuprofen?',
+  'Tell me about ethanol in chemistry',
 ]
 
-// ── Result card ───────────────────────────────────────────────────────────────
+// ── Intent badge colors ───────────────────────────────────────────────────────
+
+const INTENT_STYLE = {
+  property: { bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.2)',  text: '#7c3aed', label: 'Properties' },
+  catalog:  { bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.25)', text: '#059669', label: 'Catalog'     },
+  safety:   { bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.22)',  text: '#dc2626', label: 'Safety'      },
+  general:  { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.22)', text: '#2563eb', label: 'General'     },
+}
+
+// ── MoleculeCard ──────────────────────────────────────────────────────────────
 
 function MoleculeCard({ data }) {
   return (
@@ -69,7 +133,6 @@ function MoleculeCard({ data }) {
         boxShadow: '0 1px 1px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.04), 0 16px 32px rgba(0,0,0,0.07)',
       }}>
 
-      {/* Query bar */}
       <div className="flex items-center gap-2 px-6 py-3 border-b border-black/[0.06] bg-black/[0.015]">
         <SearchIcon size={13} />
         <span className="font-mono text-[0.78rem] text-[#6e6e73]">{data.name}</span>
@@ -78,8 +141,6 @@ function MoleculeCard({ data }) {
 
       <div className="p-6">
         <div className="flex gap-5 mb-5">
-
-          {/* Molecule info panel */}
           <div className="shrink-0 w-[160px] rounded-xl border border-[rgba(124,58,237,0.12)]
             bg-[rgba(124,58,237,0.04)] p-4">
             <div className="w-full h-[80px] rounded-lg bg-white/80 border border-[rgba(124,58,237,0.1)]
@@ -89,50 +150,28 @@ function MoleculeCard({ data }) {
             <p className="font-mono text-[0.78rem] font-semibold text-[#1d1d1f] mb-2 truncate" title={data.name}>
               {data.name}
             </p>
-            {data.formula && (
-              <p className="font-mono text-[0.65rem] text-[#6e6e73]">{data.formula}</p>
-            )}
-            {data.molecular_weight && (
-              <p className="font-mono text-[0.65rem] text-[#6e6e73]">MW {data.molecular_weight}</p>
-            )}
-            {data.cas && (
-              <p className="font-mono text-[0.65rem] text-[#6e6e73]">CAS {data.cas}</p>
-            )}
+            {data.formula          && <p className="font-mono text-[0.65rem] text-[#6e6e73]">{data.formula}</p>}
+            {data.molecular_weight && <p className="font-mono text-[0.65rem] text-[#6e6e73]">MW {data.molecular_weight}</p>}
+            {data.cas              && <p className="font-mono text-[0.65rem] text-[#6e6e73]">CAS {data.cas}</p>}
           </div>
 
-          {/* Answer panel */}
           <div className="flex-1 min-w-0">
-
-            {/* IUPAC name */}
             {data.iupac_name && (
               <div className="mb-4">
-                <p className="text-[0.7rem] font-medium uppercase tracking-wider text-[#9ca3af] mb-1">
-                  IUPAC Name
-                </p>
-                <p className="text-[0.88rem] font-medium text-[#1d1d1f] leading-snug">
-                  {data.iupac_name}
-                </p>
+                <p className="text-[0.7rem] font-medium uppercase tracking-wider text-[#9ca3af] mb-1">IUPAC Name</p>
+                <p className="text-[0.88rem] font-medium text-[#1d1d1f] leading-snug">{data.iupac_name}</p>
               </div>
             )}
-
-            {/* SMILES */}
             {data.smiles && (
               <div className="mb-4">
-                <p className="text-[0.7rem] font-medium uppercase tracking-wider text-[#9ca3af] mb-1">
-                  SMILES
-                </p>
+                <p className="text-[0.7rem] font-medium uppercase tracking-wider text-[#9ca3af] mb-1">SMILES</p>
                 <p className="font-mono text-[0.75rem] text-[#374151] break-all leading-relaxed
                   bg-black/[0.03] rounded-lg px-3 py-2 border border-black/[0.06]">
                   {data.smiles}
                 </p>
               </div>
             )}
-
-            {/* Citation */}
-            <a
-              href={data.source.url}
-              target="_blank"
-              rel="noopener noreferrer"
+            <a href={data.source.url} target="_blank" rel="noopener noreferrer"
               className="flex items-start gap-2 p-3 rounded-xl bg-[rgba(124,58,237,0.05)]
                 border border-[rgba(124,58,237,0.12)] hover:bg-[rgba(124,58,237,0.09)]
                 transition-colors duration-150 group">
@@ -144,18 +183,248 @@ function MoleculeCard({ data }) {
           </div>
         </div>
 
-        {/* Synonyms */}
         {data.synonyms?.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-4 border-t border-black/[0.06]">
-            <span className="font-mono text-[0.65rem] text-[#9ca3af] self-center mr-1">
-              Also known as:
-            </span>
+            <span className="font-mono text-[0.65rem] text-[#9ca3af] self-center mr-1">Also known as:</span>
             {data.synonyms.slice(0, 4).map(s => (
               <span key={s} className="font-mono text-[0.65rem] text-[#6e6e73]
-                bg-black/[0.04] border border-black/[0.07] px-2.5 py-1 rounded-md">
-                {s}
-              </span>
+                bg-black/[0.04] border border-black/[0.07] px-2.5 py-1 rounded-md">{s}</span>
             ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Agent helpers ─────────────────────────────────────────────────────────────
+
+const SOURCE_ICON = {
+  PubChem: <AtomIcon size={13} />,
+  'Internal Catalog': <BoxIcon size={13} />,
+  Wikipedia: <BookIcon size={13} />,
+}
+
+function PipelineRail({ toolsUsed }) {
+  const steps = [
+    { name: 'Classify', key: 'classify',  always: true },
+    { name: 'PubChem',  key: 'pubchem'  },
+    { name: 'Catalog',  key: 'catalog'  },
+    { name: 'Wikipedia',key: 'wikipedia'},
+    { name: 'Synthesize', key: 'synth',  always: true },
+  ]
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 mb-3 flex-wrap">
+      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#9ca3af] mr-2">
+        Pipeline
+      </span>
+      {steps.map((s, i) => {
+        const active = s.always || toolsUsed?.includes(s.key)
+        return (
+          <span key={s.key} className="flex items-center gap-1.5">
+            <span className={`flex items-center gap-1 font-mono text-[0.65rem] px-2 py-0.5 rounded-full border transition-all
+              ${active
+                ? 'bg-[rgba(124,58,237,0.08)] border-[rgba(124,58,237,0.25)] text-[#7c3aed]'
+                : 'bg-black/[0.025] border-black/[0.06] text-[#c4c4c4]'}`}>
+              {active && <span className="text-[#7c3aed]"><CheckIcon size={9} /></span>}
+              {s.name}
+            </span>
+            {i < steps.length - 1 && (
+              <span className="text-[#d4d4d8]"><ArrowIcon /></span>
+            )}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+function KeyFacts({ facts }) {
+  if (!facts) return null
+  const tiles = [
+    { label: 'Formula',    value: facts.formula },
+    { label: 'MW (g/mol)', value: facts.molecular_weight },
+    { label: 'CAS',        value: facts.cas },
+    { label: 'PubChem CID',value: facts.cid },
+  ].filter(t => t.value)
+
+  if (tiles.length === 0) return null
+
+  return (
+    <div className="px-7 py-5 border-b border-black/[0.05]">
+      <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#9ca3af] mb-3">
+        Key facts
+      </p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        {tiles.map(t => (
+          <div key={t.label} className="rounded-xl p-3 border border-[rgba(124,58,237,0.12)]
+            bg-gradient-to-br from-[rgba(124,58,237,0.04)] to-white">
+            <p className="font-mono text-[0.55rem] uppercase tracking-wider text-[#9ca3af] mb-1">{t.label}</p>
+            <p className="font-mono text-[0.78rem] font-semibold text-[#1d1d1f] break-all">{t.value}</p>
+          </div>
+        ))}
+      </div>
+      {facts.iupac_name && (
+        <div className="mt-3 px-3 py-2 rounded-lg bg-black/[0.025] border border-black/[0.05]">
+          <p className="font-mono text-[0.55rem] uppercase tracking-wider text-[#9ca3af] mb-0.5">IUPAC name</p>
+          <p className="font-mono text-[0.72rem] text-[#1d1d1f] leading-snug">{facts.iupac_name}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ProductCard({ row }) {
+  return (
+    <div className="rounded-xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 to-white p-4
+      hover:border-emerald-300 transition-all">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <div className="flex items-center gap-1.5 text-emerald-700 mb-1">
+            <BoxIcon size={11} />
+            <span className="font-mono text-[0.6rem] font-semibold uppercase tracking-wider">In stock</span>
+          </div>
+          <p className="font-mono text-[0.82rem] font-semibold text-[#1d1d1f]">{row.sku}</p>
+          <p className="font-mono text-[0.65rem] text-[#6e6e73] mt-0.5">{row.supplier}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-mono text-[1.1rem] font-semibold text-[#1d1d1f]">${row.price_usd}</p>
+          <p className="font-mono text-[0.6rem] text-[#9ca3af] mt-0.5">{row.pack_size}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-emerald-100">
+        <div>
+          <p className="font-mono text-[0.55rem] uppercase tracking-wider text-[#9ca3af] mb-0.5">Grade</p>
+          <p className="font-mono text-[0.72rem] font-medium text-[#1d1d1f]">{row.grade}</p>
+        </div>
+        <div>
+          <p className="font-mono text-[0.55rem] uppercase tracking-wider text-[#9ca3af] mb-0.5">Stock</p>
+          <p className="font-mono text-[0.72rem] font-medium text-emerald-700">{row.stock_units} units</p>
+        </div>
+        <div>
+          <p className="font-mono text-[0.55rem] uppercase tracking-wider text-[#9ca3af] mb-0.5">Lead time</p>
+          <p className="font-mono text-[0.72rem] font-medium text-[#1d1d1f]">{row.lead_time_days}d</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── AgentAnswer ───────────────────────────────────────────────────────────────
+
+function AgentAnswer({ data }) {
+  const style = INTENT_STYLE[data.intent] || INTENT_STYLE.general
+
+  return (
+    <div>
+      {/* Pipeline rail */}
+      <PipelineRail toolsUsed={data.tools_used} />
+
+      {/* Main card */}
+      <div className="rounded-2xl border border-white/90 overflow-hidden"
+        style={{
+          background: 'rgba(255,255,255,0.82)',
+          backdropFilter: 'saturate(180%) blur(48px)',
+          boxShadow: '0 1px 1px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04), 0 24px 48px rgba(124,58,237,0.08)',
+        }}>
+
+        {/* Hero header */}
+        <div className="px-7 pt-6 pb-5 border-b border-black/[0.05]
+          bg-gradient-to-br from-[rgba(124,58,237,0.04)] to-transparent">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="font-mono text-[0.62rem] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider"
+              style={{ background: style.bg, border: `1px solid ${style.border}`, color: style.text }}>
+              {style.label}
+            </span>
+            {data.has_catalog_data && (
+              <span className="font-mono text-[0.6rem] font-semibold text-emerald-700 uppercase tracking-wider
+                bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span><CheckIcon size={8} /></span> In catalog
+              </span>
+            )}
+            <span className="ml-auto font-mono text-[0.6rem] text-[#9ca3af] uppercase tracking-wider">
+              Agent · LangGraph
+            </span>
+          </div>
+          <h2 className="font-mono text-[1.55rem] font-semibold tracking-tight text-[#1d1d1f] capitalize leading-tight">
+            {data.molecule_name}
+          </h2>
+        </div>
+
+        {/* Key facts strip */}
+        <KeyFacts facts={data.pubchem_facts} />
+
+        {/* Answer body */}
+        <div className="px-7 py-6">
+          <div className="flex gap-3 items-start">
+            <span className="shrink-0 mt-0.5"><SparkleIcon size={20} /></span>
+            <div className="flex-1">
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#9ca3af] mb-2">
+                Synthesized answer
+              </p>
+              <p className="font-mono text-[0.82rem] text-[#1d1d1f] leading-[1.95] tracking-[0.005em]">
+                {data.answer}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Catalog product cards */}
+        {data.catalog_rows?.length > 0 && (
+          <div className="px-7 pb-6">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#9ca3af] mb-2.5">
+              Catalog hit
+            </p>
+            <div className="space-y-2.5">
+              {data.catalog_rows.slice(0, 2).map((row, i) => (
+                <ProductCard key={i} row={row} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Sources */}
+        {data.citations?.length > 0 && (
+          <div className="px-7 pb-6 pt-2 border-t border-black/[0.05]">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#9ca3af] mb-2.5">
+              Sources · {data.citations.length}
+            </p>
+            <div className="space-y-2">
+              {data.citations.map((c, i) => {
+                const icon = SOURCE_ICON[c.source] || <StarIcon />
+                const Body = (
+                  <>
+                    <span className="text-[#7c3aed] shrink-0">{icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-[0.72rem] font-medium text-[#1d1d1f] leading-tight">
+                        {c.source}
+                        {c.cid && <span className="text-[#9ca3af] font-normal"> · CID {c.cid}</span>}
+                      </p>
+                      <p className="font-mono text-[0.6rem] text-[#6e6e73] mt-0.5">
+                        {c.accessed && <>accessed {c.accessed}</>}
+                        {c.note && <>{c.note}</>}
+                        {!c.accessed && !c.note && c.url && <>{c.url.replace(/^https?:\/\//, '').slice(0, 50)}</>}
+                      </p>
+                    </div>
+                    {c.url && <span className="text-[#9ca3af] text-[0.6rem] shrink-0">↗</span>}
+                  </>
+                )
+                return c.url ? (
+                  <a key={i} href={c.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white/70 border border-black/[0.06]
+                      hover:border-[rgba(124,58,237,0.3)] hover:bg-[rgba(124,58,237,0.025)]
+                      transition-all duration-150">
+                    {Body}
+                  </a>
+                ) : (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/70 border border-black/[0.06]">
+                    {Body}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -166,18 +435,37 @@ function MoleculeCard({ data }) {
 // ── Main App ──────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [query, setQuery]   = useState('')
-  const { data, loading, error, search } = useMolecule()
+  const [query, setQuery] = useState('')
+  const [mode, setMode]   = useState('lookup')   // 'lookup' | 'ask'
+
+  const { data: molData, loading: molLoading, error: molError, search, reset: molReset } = useMolecule()
+  const { data: askData, loading: askLoading, error: askError, ask,    reset: askReset } = useAsk()
+
+  const loading = mode === 'lookup' ? molLoading : askLoading
+  const error   = mode === 'lookup' ? molError   : askError
+  const data    = mode === 'lookup' ? molData     : askData
+
+  const handleModeSwitch = (newMode) => {
+    setMode(newMode)
+    setQuery('')
+    molReset()
+    askReset()
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (query.trim()) search(query)
+    if (!query.trim()) return
+    if (mode === 'lookup') search(query)
+    else                   ask(query)
   }
 
   const handleSuggestion = (text) => {
     setQuery(text)
-    search(text)
+    if (mode === 'lookup') search(text)
+    else                   ask(text)
   }
+
+  const suggestions = mode === 'lookup' ? LOOKUP_SUGGESTIONS : ASK_SUGGESTIONS
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] relative overflow-hidden font-sans">
@@ -224,7 +512,30 @@ export default function App() {
           </p>
         </div>
 
-        {/* Search bar */}
+        {/* Mode toggle */}
+        <div className="flex justify-center mb-5 animate-rise-1">
+          <div className="inline-flex items-center gap-1 rounded-full p-1
+            bg-black/[0.04] border border-black/[0.07]">
+            <button
+              onClick={() => handleModeSwitch('lookup')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[0.72rem] font-mono font-medium
+                transition-all duration-200 ${mode === 'lookup'
+                  ? 'bg-white text-[#1d1d1f] shadow-sm border border-black/[0.07]'
+                  : 'text-[#6e6e73] hover:text-[#1d1d1f]'}`}>
+              <SearchIcon size={11} /> Lookup
+            </button>
+            <button
+              onClick={() => handleModeSwitch('ask')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[0.72rem] font-mono font-medium
+                transition-all duration-200 ${mode === 'ask'
+                  ? 'bg-white text-[#1d1d1f] shadow-sm border border-black/[0.07]'
+                  : 'text-[#6e6e73] hover:text-[#1d1d1f]'}`}>
+              <AgentIcon /> Ask Agent
+            </button>
+          </div>
+        </div>
+
+        {/* Search / Ask bar */}
         <div className="animate-rise-2 mb-4">
           <form onSubmit={handleSubmit}>
             <div className="flex items-center gap-3 w-full rounded-2xl px-5 py-4
@@ -239,14 +550,14 @@ export default function App() {
               }}>
 
               <span className="text-[#9ca3af] shrink-0">
-                {loading ? <Spinner /> : <SearchIcon />}
+                {loading ? <Spinner /> : (mode === 'ask' ? <AgentIcon /> : <SearchIcon />)}
               </span>
 
               <input
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Ask anything about a molecule…"
+                placeholder={mode === 'ask' ? 'Ask anything about a molecule…' : 'Search by name, CAS, or synonym…'}
                 className="flex-1 bg-transparent outline-none font-mono text-[0.88rem]
                   text-[#1d1d1f] placeholder:text-[#9ca3af]"
                 autoFocus
@@ -258,7 +569,7 @@ export default function App() {
                   className="font-mono text-[0.7rem] font-medium text-[#7c3aed]
                     bg-[rgba(124,58,237,0.08)] border border-[rgba(124,58,237,0.2)]
                     px-3 py-1.5 rounded-lg hover:bg-[rgba(124,58,237,0.15)] transition-colors">
-                  Search
+                  {mode === 'ask' ? 'Ask' : 'Search'}
                 </button>
               )}
 
@@ -274,7 +585,7 @@ export default function App() {
         {/* Suggestion pills */}
         {!data && !loading && (
           <div className="flex flex-wrap gap-2 justify-center mb-12 animate-rise-2">
-            {SUGGESTIONS.map(p => (
+            {suggestions.map(p => (
               <button key={p} onClick={() => handleSuggestion(p)}
                 className="font-mono text-[0.7rem] text-[#6e6e73] bg-white/70 border border-black/[0.07]
                   px-3 py-1.5 rounded-full hover:border-[rgba(124,58,237,0.4)] hover:text-[#7c3aed]
@@ -290,7 +601,9 @@ export default function App() {
           <div className="flex flex-col items-center gap-3 py-16 animate-rise-2">
             <Spinner />
             <p className="font-mono text-[0.78rem] text-[#9ca3af]">
-              Querying PubChem…
+              {mode === 'ask'
+                ? 'Classifying intent · Fetching tools · Synthesizing answer…'
+                : 'Querying PubChem…'}
             </p>
           </div>
         )}
@@ -302,10 +615,12 @@ export default function App() {
           </div>
         )}
 
-        {/* Live result card */}
+        {/* Result */}
         {data && !loading && (
           <div className="animate-rise-2 mb-4">
-            <MoleculeCard data={data} />
+            {mode === 'lookup'
+              ? <MoleculeCard data={data} />
+              : <AgentAnswer  data={data} />}
           </div>
         )}
 
