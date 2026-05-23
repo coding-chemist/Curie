@@ -205,37 +205,92 @@ const SOURCE_ICON = {
   Wikipedia: <BookIcon size={13} />,
 }
 
-function PipelineRail({ toolsUsed }) {
-  const steps = [
-    { name: 'Classify', key: 'classify',  always: true },
-    { name: 'PubChem',  key: 'pubchem'  },
-    { name: 'Catalog',  key: 'catalog'  },
-    { name: 'Wikipedia',key: 'wikipedia'},
-    { name: 'Synthesize', key: 'synth',  always: true },
+function PipelineRail({ toolsUsed, iterations }) {
+  const tools = [
+    { name: 'PubChem',   key: 'pubchem'   },
+    { name: 'Catalog',   key: 'catalog'   },
+    { name: 'Wikipedia', key: 'wikipedia' },
   ]
 
   return (
     <div className="flex items-center justify-center gap-1.5 mb-3 flex-wrap">
-      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#9ca3af] mr-2">
-        Pipeline
+      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#9ca3af] mr-1">
+        Reasoner
       </span>
-      {steps.map((s, i) => {
-        const active = s.always || toolsUsed?.includes(s.key)
+      <span className="flex items-center gap-1 font-mono text-[0.65rem] px-2 py-0.5 rounded-full
+        bg-[rgba(124,58,237,0.08)] border border-[rgba(124,58,237,0.25)] text-[#7c3aed]">
+        ↻ {iterations || 1} step{(iterations || 1) === 1 ? '' : 's'}
+      </span>
+      <span className="text-[#d4d4d8]"><ArrowIcon /></span>
+      {tools.map((t, i) => {
+        const active = toolsUsed?.includes(t.key)
         return (
-          <span key={s.key} className="flex items-center gap-1.5">
-            <span className={`flex items-center gap-1 font-mono text-[0.65rem] px-2 py-0.5 rounded-full border transition-all
-              ${active
-                ? 'bg-[rgba(124,58,237,0.08)] border-[rgba(124,58,237,0.25)] text-[#7c3aed]'
-                : 'bg-black/[0.025] border-black/[0.06] text-[#c4c4c4]'}`}>
-              {active && <span className="text-[#7c3aed]"><CheckIcon size={9} /></span>}
-              {s.name}
-            </span>
-            {i < steps.length - 1 && (
-              <span className="text-[#d4d4d8]"><ArrowIcon /></span>
-            )}
+          <span key={t.key} className={`flex items-center gap-1 font-mono text-[0.65rem] px-2 py-0.5 rounded-full border transition-all
+            ${active
+              ? 'bg-[rgba(124,58,237,0.08)] border-[rgba(124,58,237,0.25)] text-[#7c3aed]'
+              : 'bg-black/[0.025] border-black/[0.06] text-[#c4c4c4]'}`}>
+            {active && <span className="text-[#7c3aed]"><CheckIcon size={9} /></span>}
+            {t.name}
           </span>
         )
       })}
+      <span className="text-[#d4d4d8]"><ArrowIcon /></span>
+      <span className="flex items-center gap-1 font-mono text-[0.65rem] px-2 py-0.5 rounded-full
+        bg-[rgba(124,58,237,0.08)] border border-[rgba(124,58,237,0.25)] text-[#7c3aed]">
+        <CheckIcon size={9} /> Answer
+      </span>
+    </div>
+  )
+}
+
+function AgentTrace({ trace, iterations }) {
+  const [open, setOpen] = useState(false)
+  if (!trace || trace.length === 0) return null
+
+  return (
+    <div className="px-7 pb-6 pt-2 border-t border-black/[0.05]">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-2 w-full text-left group">
+        <span className={`text-[#9ca3af] transition-transform ${open ? 'rotate-90' : ''}`}>
+          <ArrowIcon />
+        </span>
+        <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#9ca3af]
+          group-hover:text-[#7c3aed] transition-colors">
+          Agent reasoning · {iterations} iteration{iterations === 1 ? '' : 's'} · {trace.length} tool call{trace.length === 1 ? '' : 's'}
+        </span>
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-1.5 pl-4 border-l-2 border-[rgba(124,58,237,0.15)]">
+          {trace.map((t, i) => {
+            const statusColor =
+              t.status === 'ok'        ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
+              t.status === 'not_found' ? 'text-amber-700  bg-amber-50  border-amber-200'     :
+                                         'text-red-700    bg-red-50    border-red-200'
+            return (
+              <div key={i} className="flex items-start gap-2 py-1.5">
+                <span className="font-mono text-[0.6rem] text-[#9ca3af] mt-0.5 shrink-0 w-8">
+                  #{t.step}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-mono text-[0.7rem] font-medium text-[#1d1d1f]">{t.tool}</span>
+                    <span className="font-mono text-[0.62rem] text-[#9ca3af]">
+                      ({Object.entries(t.args).map(([k,v]) => `${k}=${JSON.stringify(v)}`).join(', ')})
+                    </span>
+                    <span className={`font-mono text-[0.55rem] font-semibold uppercase tracking-wider
+                      border px-1.5 py-0.5 rounded ${statusColor}`}>
+                      {t.status}
+                    </span>
+                  </div>
+                  <p className="font-mono text-[0.62rem] text-[#6e6e73] mt-0.5">→ {t.summary}</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
@@ -320,7 +375,7 @@ function AgentAnswer({ data }) {
   return (
     <div>
       {/* Pipeline rail */}
-      <PipelineRail toolsUsed={data.tools_used} />
+      <PipelineRail toolsUsed={data.tools_used} iterations={data.iterations} />
 
       {/* Main card */}
       <div className="rounded-2xl border border-white/90 overflow-hidden"
@@ -345,7 +400,7 @@ function AgentAnswer({ data }) {
               </span>
             )}
             <span className="ml-auto font-mono text-[0.6rem] text-[#9ca3af] uppercase tracking-wider">
-              Agent · LangGraph
+              ReAct · {data.iterations || 1} step{(data.iterations || 1) === 1 ? '' : 's'}
             </span>
           </div>
           <h2 className="font-mono text-[1.55rem] font-semibold tracking-tight text-[#1d1d1f] capitalize leading-tight">
@@ -384,6 +439,9 @@ function AgentAnswer({ data }) {
             </div>
           </div>
         )}
+
+        {/* Agent trace (audit log) */}
+        <AgentTrace trace={data.trace} iterations={data.iterations} />
 
         {/* Sources */}
         {data.citations?.length > 0 && (
