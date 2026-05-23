@@ -34,6 +34,66 @@ export async function lookupMolecule(query) {
 }
 
 /**
+ * Generate a pre-experiment safety briefing for a compound.
+ * @param {string} compound - e.g. "chloroform", "benzene"
+ * @returns {Promise<SafetyResponse>}
+ */
+export async function getSafetyBriefing(compound) {
+  const res = await fetch(`${BASE_URL}/api/v1/safety`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ compound: compound.trim() }),
+  })
+
+  if (res.status === 429) {
+    throw new Error('Too many requests — please wait a moment and try again.')
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail || 'Safety service unavailable. Please try again.')
+  }
+  return res.json()
+}
+
+/**
+ * Compare 2–4 compounds side by side.
+ * @param {string[]} compounds
+ * @returns {Promise<CompareResponse>}
+ */
+export async function compareCompounds(compounds) {
+  const res = await fetch(`${BASE_URL}/api/v1/compare`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ compounds }),
+  })
+  if (res.status === 429) throw new Error('Too many requests — please wait.')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail || 'Compare service unavailable.')
+  }
+  return res.json()
+}
+
+/**
+ * Build a procurement quote for a list of compounds.
+ * @param {{name: string, quantity?: number}[]} items
+ * @returns {Promise<ProcureResponse>}
+ */
+export async function procureCompounds(items) {
+  const res = await fetch(`${BASE_URL}/api/v1/procure`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  })
+  if (res.status === 429) throw new Error('Too many requests — please wait.')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail || 'Procure service unavailable.')
+  }
+  return res.json()
+}
+
+/**
  * Send a natural-language chemistry question to the LangGraph agent.
  * @param {string} question - e.g. "What is the LD50 of caffeine?"
  * @returns {Promise<AskResponse>}
