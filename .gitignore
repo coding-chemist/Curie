@@ -27,3 +27,6 @@ dist-ssr
 
 # Backend has its own repo → HuggingFace Spaces
 backend/
+
+# Local Claude Code config
+.claude/
